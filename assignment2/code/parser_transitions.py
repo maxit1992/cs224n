@@ -9,6 +9,9 @@ Haoshen Hong <haoshen@stanford.edu>
 
 import sys
 
+from torch.distributed.tensor import empty
+
+
 class PartialParse(object):
     def __init__(self, sentence):
         """Initializes this partial parse.
@@ -20,7 +23,19 @@ class PartialParse(object):
         self.sentence = sentence
 
         ### YOUR CODE HERE (3 Lines)
-        self.stack = ["ROOT"]
+        ### Your code should initialize the following fields:
+                ###     self.stack: The current stack represented as a list with the top of the stack as the
+        ###                 last element of the list.
+        ###     self.buffer: The current buffer represented as a list with the first item on the
+        ###                  buffer as the first item of the list
+        ###     self.dependencies: The list of dependencies produced so far. Represented as a list of
+        ###             tuples where each tuple is of the form (head, dependent).
+        ###             Order for this list doesn't matter.
+        ###
+        ### Note: The root token should be represented with the string "ROOT"
+        ### Note: If you need to use the sentence object to initialize anything, make sure to not directly
+        ###       reference the sentence object.  That is, remember to NOT modify the sentence object.
+        self.stack = ['ROOT']
         self.buffer = [word for word in self.sentence]
         self.dependencies = []
         ### END YOUR CODE
@@ -34,14 +49,22 @@ class PartialParse(object):
                                 transition is a legal transition.
         """
         ### YOUR CODE HERE (~7-12 Lines)
+        ### TODO:
+        ###     Implement a single parsing step, i.e. the logic for the following as
+        ###     described in the pdf handout:
+        ###         1. Shift
+        ###         2. Left Arc
+        ###         3. Right Arc
         match transition:
-            case "S":
+            case 'S':
                 self.stack.append(self.buffer.pop(0))
+                return
             case 'LA':
                 self.dependencies.append((self.stack[-1], self.stack.pop(-2)))
+                return
             case 'RA':
                 self.dependencies.append((self.stack[-2], self.stack.pop(-1)))
-         ### END YOUR CODE
+        ### END YOUR CODE
 
     def parse(self, transitions):
         """Applies the provided transitions to this PartialParse
@@ -90,7 +113,16 @@ def minibatch_parse(sentences, model, batch_size):
     ###             contains references to the same objects. Thus, you should NOT use the `del` operator
     ###             to remove objects from the `unfinished_parses` list. This will free the underlying memory that
     ###             is being accessed by `partial_parses` and may cause your code to crash.
-
+    partial_parses = [PartialParse(sentence) for sentence in sentences]
+    unfinished_parses = partial_parses[:]
+    while len(unfinished_parses)>0:
+        for start_index in range(0, len(unfinished_parses), batch_size):
+            end_index = min(batch_size, len(unfinished_parses[start_index:]))
+            transitions = model.predict(unfinished_parses[start_index:start_index+end_index])
+            for i in range(end_index):
+                unfinished_parses[start_index+i].parse_step(transitions[i])
+        unfinished_parses = [parse for parse in unfinished_parses if not (len(parse.buffer)==0 and len(parse.stack)==1)]
+    dependencies = [parse.dependencies for parse in partial_parses]
     ### END YOUR CODE
 
     return dependencies
@@ -133,7 +165,7 @@ def test_parse():
     dependencies = PartialParse(sentence).parse(["S", "S", "S", "LA", "RA", "RA"])
     dependencies = tuple(sorted(dependencies))
     expected = (('ROOT', 'parse'), ('parse', 'sentence'), ('sentence', 'this'))
-    assert dependencies == expected, \
+    assert dependencies == expected,  \
         "parse test resulted in dependencies {:}, expected {:}".format(dependencies, expected)
     assert tuple(sentence) == ("parse", "this", "sentence"), \
         "parse test failed: the input sentence should not be modified"
@@ -143,8 +175,7 @@ def test_parse():
 class DummyModel(object):
     """Dummy model for testing the minibatch_parse function
     """
-
-    def __init__(self, mode="unidirectional"):
+    def __init__(self, mode = "unidirectional"):
         self.mode = mode
 
     def predict(self, partial_parses):
@@ -167,7 +198,6 @@ class DummyModel(object):
         """
         return [("RA" if len(pp.stack) % 2 == 0 else "LA") if len(pp.buffer) == 0 else "S"
                 for pp in partial_parses]
-
 
 def test_dependencies(name, deps, ex_deps):
     """Tests the provided dependencies match the expected dependencies"""
@@ -206,20 +236,18 @@ def test_minibatch_parse():
     deps = minibatch_parse(sentences, DummyModel(mode="interleave"), 1)
     test_dependencies("minibatch_parse", deps[0],
                       (('ROOT', 'is'), ('dependency', 'interleaving'),
-                       ('dependency', 'test'), ('is', 'dependency'), ('is', 'this')))
+                      ('dependency', 'test'), ('is', 'dependency'), ('is', 'this')))
     print("minibatch_parse test passed!")
 
 
 if __name__ == '__main__':
     args = sys.argv
     if len(args) != 2:
-        raise Exception(
-            "You did not provide a valid keyword. Either provide 'part_c' or 'part_d', when executing this script")
+        raise Exception("You did not provide a valid keyword. Either provide 'part_c' or 'part_d', when executing this script")
     elif args[1] == "part_c":
         test_parse_step()
         test_parse()
     elif args[1] == "part_d":
         test_minibatch_parse()
     else:
-        raise Exception(
-            "You did not provide a valid keyword. Either provide 'part_c' or 'part_d', when executing this script")
+        raise Exception("You did not provide a valid keyword. Either provide 'part_c' or 'part_d', when executing this script")
