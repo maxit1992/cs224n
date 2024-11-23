@@ -50,6 +50,7 @@ Prove that the naive-softmax loss (Equation \ref{naive-softmax}) is the same as 
 \end{equation}
 
 Your answer should be one line. You may describe your answer in words.
+
 \ifans{
 \begin{equation} 
 \by_w =  
@@ -108,15 +109,14 @@ Your answer should be one line. You may describe your answer in words.
 \part[1]
 In many downstream applications using word embeddings, L2 normalized vectors (e.g. $\mathbf{u}/||\mathbf{u}||_2$ where $||\mathbf{u}||_2 = \sqrt{\sum_i u_i^2}$) are used instead of their raw forms (e.g. $\mathbf{u}$). Let’s consider a hypothetical downstream task of binary classification of phrases as being positive or negative, where you decide the sign based on the sum of individual embeddings of the words. When would L2 normalization take away useful information for the downstream task? When would it not?
 
+\textbf{Hint:} Consider the case where $\mathbf{u}_x = \alpha\mathbf{u}_y$ for some words $x \neq y$ and some scalar $\alpha$. When $\alpha$ is positive, what will be the value of normalized  $\mathbf{u}_x$ and normalized $\mathbf{u}_y$? How might $\mathbf{u}_x$ and $\mathbf{u}_y$ be related for such a normalization to affect or not affect the resulting classification?
+
 \ifans{
 \begin{gather*}
 \bu_x = \alpha \bu_y \Rightarrow L_2(\bu_x) = \frac{\bu_x}{||\bu_x||_2} , L_2(\bu_y)=\frac{\alpha \bu_x}{||\alpha\bu_x||_2} = \frac{\bu_x}{||\bu_x||_2} = L_2(\bu_x)
 \end{gather*}
 Suppose we have a sentence with both negative (e.g. bad) and positive words (e.g best). In this case best may be $\alpha \bu_x$ where $\bu_x$ could be the word good. In such sentence, summing the bad embedding with the best embedding may classify the sentence as positive. If we apply L2 normalization to the sentence, we will end up summing the embeddings of bad and good that may classify now the sentence as negative. Instead, if we consider the relative positions of the embeddings (not the magnitudes) to make the classification, the L2 normalization will not affect the results.
 }
-
-\textbf{Hint:} Consider the case where $\mathbf{u}_x = \alpha\mathbf{u}_y$ for some words $x \neq y$ and some scalar $\alpha$. When $\alpha$ is positive, what will be the value of normalized  $\mathbf{u}_x$ and normalized $\mathbf{u}_y$? How might $\mathbf{u}_x$ and $\mathbf{u}_y$ be related for such a normalization to affect or not affect the resulting classification?
-
 
 % Question 1-D
 \part[5] 

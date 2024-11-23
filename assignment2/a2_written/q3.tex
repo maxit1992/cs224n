@@ -122,18 +122,12 @@ We will need $2*n$ steps. For each word we need one operation to move the word f
     \begin{enumerate}[label=\roman*.]
     
         \item \textcolor{black}{Compute the derivative of $\bh = \relu(\bx \bW + \bb_1)$ with respect to $\bx$. For simplicity, you only need to show the derivative $\frac{\partial h_i}{\partial x_j}$ for some index $i$ and $j$. You may ignore the case where the derivative is not defined at 0.}
-        
-\ifans{
-TBD
-}
+
         \item \textcolor{black}{Recall in part 1b, we computed the partial derivative of $\bJ_{\text{naive-softmax}}(\bv_c, o, \bU)$. Likewise, please compute the partial derivative of $J(\theta)$ with respect to the $i$th entry of $\bl$, which is denoted as $\bl_i$. Specifically, compute $\frac{\partial CE(\by, \byt)}{\partial \bl_i}$, assuming that $\bl \in \R^3$, $\byt \in \R^3$, $\by \in \R^3$, and the true label is $c$. \\
         \textbf{Hints}: You may recall from part 1a, $\frac{\partial CE(\by, \byt)}{\partial \bl_i} = \sum_j \frac{\partial CE(\by, \byt)}{\partial \byt_j}\frac{\partial \byt_j}{\partial \bl_i}$, and $\frac{\partial CE(\by, \byt)}{\partial \byt_j}=0$ if $j \neq c$. 
         }
         
-\ifans{
-TBD
-}
-        \item We will use UAS score as our evaluation metric. UAS refers to Unlabeled Attachment Score, which is computed as the ratio between number of correctly predicted dependencies and the number of total dependencies despite of the relations (our model doesn't predict this).\newline
+     \item We will use UAS score as our evaluation metric. UAS refers to Unlabeled Attachment Score, which is computed as the ratio between number of correctly predicted dependencies and the number of total dependencies despite of the relations (our model doesn't predict this).\newline
     
    In \texttt{parser\_model.py} you will find skeleton code to implement this simple neural network using PyTorch. Complete the \texttt{\_\_init\_\_}, \texttt{embedding\_lookup} and \texttt{forward} functions to implement the model. Then complete the \texttt{train\_for\_epoch} and \texttt{train} functions within the \texttt{run.py} file.
    
@@ -170,12 +164,55 @@ TBD
             \item Working implementation of the functions for training in \texttt{run.py}. (We'll look at and run this code for grading).
             \item \textbf{Report the best UAS your model achieves on the dev set and the UAS it achieves on the test set in your written submission}.
 
-\ifans{
-The model reported a best UAS of 87.54 in the dev set and a test UAS of 87.99
-}
     \end{itemize}
     \end{enumerate}
-    
+
+\ifans{
+\begin{enumerate}[label=\roman*.]
+\item
+Let $\bz_i = \bx \bW_i + \bb_{1,i}$ , $\bh_i = \relu(\bx \bW_i + \bb_{1,i})$
+\begin{gather*} 
+\frac{\partial h_i}{\partial x_j} = \frac{\partial h_i}{\partial z_i} \frac{\partial z_i}{\partial x_j} = \frac{\partial}{\partial z_i} \relu(z_i) \frac{\partial}{\partial x_j}(\bx \bW_i + \bb_{1,i}) =  \\
+= 
+\left\{
+    \begin {aligned}
+         & 1 w_{i,j} = w_{i,j}  \quad & z_i > 0 \\
+         & 0 w_{i,j} = 0 \quad & z_i < 0                  
+    \end{aligned}
+\right.
+\end{gather*}
+
+\item 
+\begin{gather*} 
+\frac{\partial CE(\by, \byt)}{\partial \bl_i} = 
+\sum_j \frac{\partial CE(\by, \byt)}{\partial \byt_j}\frac{\partial \byt_j}{\partial \bl_i} \textbf{{, and }} \frac{\partial CE(\by, \byt)}{\partial \byt_j}=0 \textbf{ if $j \neq c$} \Rightarrow \\
+\Rightarrow \frac{\partial CE(\by, \byt)}{\partial \bl_i} = 
+\frac{\partial CE(\by, \byt)}{\partial \byt_c}\frac{\partial \byt_c}{\partial \bl_i} = - \frac{\by_c}{\byt_c} \frac{\partial}{\partial \bl_i} ( \frac{\exp(\bl_c)}{\sum_{k} \exp(\bl_k)}) =\\
+\end{gather*} 
+Recalling $y_c = 1$,
+\begin{itemize}
+    \item 
+if $i = c$
+\begin{gather*} 
+= - \frac{1}{\byt_c} (\byt_c - \frac{\exp(\bl_c) \exp(\bl_c)}{(\sum_{k} \exp(\bl_k))^2} = - \frac{1}{\byt_c} (\byt_c - \byt_c^2) = \byt_c - 1 = \byt_i - 1
+\end{gather*}
+
+\item
+if $i \neq c$
+\begin{gather*} 
+= - \frac{1}{\byt_c} (0 - \frac{\exp(\bl_c) \exp(\bl_i)}{(\sum_{k} \exp(\bl_k))^2} = - \frac{\by_c}{\byt_c} (0-\byt_c * \byt_i) =  \byt_i 
+\end{gather*}
+\end{itemize}
+Grouping and remembering $\by_i = 0, \forall i\neq c$,
+\begin{equation}
+\frac{\partial CE(\by, \byt)}{\partial \bl} = \byt - \by
+\end{equation}
+
+\item 
+The model reported a best UAS of 87.54 in the dev set and a test UAS of 87.99
+
+\end{enumerate}
+}
     
 \part[12] We'd like to look at example dependency parses and understand where parsers like ours might be wrong. For example, in this sentence:
 
@@ -246,5 +283,9 @@ In particular, you \textbf{do not} need to look at the labels on the the depende
 
 
 \part[2] Recall in part (e), the parser uses features which includes words and their part-of-speech (POS) tags. Explain the benefit of using part-of-speech tags as features in the parser?
+
+\ifans{
+Using POS tags provides very useful information because some dependencies can be easily identified with the tags, and also tags can help us distinguish between different meanings of a word. All this additional information benefits us in a better performance of the parser model.
+}
 
 \end{parts}
