@@ -20,6 +20,13 @@ The repository is organized into subfolders, each corresponding to a specific as
   - [Assignment details](/assignment2/a2.pdf).
   - [Source code](/assignment2/code/).
   - [Written solutions](/assignment2/deliverables/a2_written.pdf).
+  
+ - **Assignment 3: [Neural Machine Translation]**
+  - Analysis of Neural Machine Translation systems and implementation using RNNs.
+  - [Link](/assignment3/).
+  - [Assignment details](/assignment3/a3.pdf).
+  - [Source code](/assignment3/code/).
+  - [Written solutions](/assignment3/deliverables/a3_written.pdf).
 
 - **[Other assignmentes WIP]**
 

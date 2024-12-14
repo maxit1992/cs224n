@@ -140,6 +140,9 @@ After setting up the cloud VM, you should turn it off while you work on the prog
     First explain (in around three sentences) what effect the masks have on the entire attention computation.
     Then explain (in one or two sentences) why it is necessary to use the masks in this way.
 
+\ifans{
+The masks are used to assign $-inf$ to $e_{t,i}$ where the mask is 1 (i.e. padding words indexes). By doing so, when computing the softmax, the exponential will return a very low value (zero in the limit) at mask 1 positions, so those positions won't be considered when normalizing $e_{t}$ to probabilities. As a result, no attention will be assigned to padding words.
+}
 
 \end{parts}
 
@@ -187,7 +190,7 @@ sh run.sh test
 \end{lstlisting}
     Please report the model's corpus BLEU Score. It should be larger than 18.
     
-
+\ifans{BLEU score: 19.52}
     
     \part[4] (written) In class, we learned about dot product attention, multiplicative attention, and additive attention.  As a reminder, dot product attention is $\be_{t,i} = \bs_t^T\bh_i$, multiplicative attention is $\be_{t,i} = \bs_t^T\bW\bh_i$, and additive attention is $\be_{t,i} = \bv^T \text{tanh}(\bW_1\bh_i + \bW_2\bs_t)$.
     
@@ -195,6 +198,12 @@ sh run.sh test
     \subpart[2] Explain one advantage and one disadvantage of \textit{dot product attention} compared to multiplicative attention.
     \subpart[2] Explain one advantage and one disadvantage of \textit{additive attention} compared to multiplicative attention.
     \end{subparts}
-            
+
+\ifans{
+\begin{itemize}
+    \item An advantage of dot product attention is that it is faster to calculate because it is a simple dot product without trainable parameters. As a disadvantage, the multiplicative attention gives us the possibility to make a more effective use of the space by adding a trainable matrix in the product.
+    \item The additive attention gives us more representation capabilities by using different matrix for the input vectors and also it is capable of modeling non linear relationships between the input vectors and the attention score. As a disadvantage, the computation is more complex and requires one additional step (the execution of the non linear activation function).
+\end{itemize}
+}
     
 \end{parts}
